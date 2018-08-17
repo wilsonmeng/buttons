@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Basic DataGrid - jQuery EasyUI Demo</title>
+    <link rel="stylesheet" type="text/css" href="easyui/themes/default/easyui.css"/>
+    <link rel="stylesheet" type="text/css" href="easyui/themes/icon.css"/>
+    <link rel="stylesheet" type="text/css" href="easyui/demo/demo.css"/>
+    <script type="text/javascript" src="easyui/jquery.min.js"></script>
+    <script type="text/javascript" src="js/WdatePicker.js"></script>
+    <script type="text/javascript" src="easyui/jquery.easyui.min.js"></script>
+
+</head>
+<style>
+    .panel-header {
+        padding: 12px;
+        /*position:absolute;*/
+    }
+    .datagrid-cell {font-size: 13px}
+    .datagrid-header .datagrid-cell span {font-size:14px}
+    .panel-title {
+        font-size: 17px;
+        height: 20px;
+        line-height: 20px;
+    }
+    .datagrid-view2 {
+        position: relative;
+        overflow: hidden;
+        top: 0;
+
+    }
+    .panel {
+        text-align: center;
+    }
+    #divid1{
+        width: 100%;
+        height: 16%;
+        background: #4c4c4c;
+    }
+    body{
+        margin: 8px;
+        padding: 0 0 0 0;
+    }
+</style>
+<script>
+    //双击显示用户信息详情
+    $(function(){
+        $('#ttd1').datagrid('resize', {
+            plain: false,
+            boder: false,
+            onDblClickRow: function () {    //双击进行操作的方法
+                var row = $('#ttd1').datagrid('getSelected');
+                if (row) {            //为防止意外情况可以选择加上此判断
+                    var tno=row.tno;
+                    $.ajax({
+                        url: "/getteacherinfo2",
+                        type: "post",
+                        data: {"tno":tno},
+                        datatype: "json",
+                        success: function (data) {
+                            document.getElementById('winddow1td1').value = data.tno;
+                            document.getElementById('winddow1td2').value = data.tname;
+                            document.getElementById('winddow1td3').value = data.gender;
+                            alert(data.gender);
+                            document.getElementById('winddow1td4').value = data.birthday_time;
+                            document.getElementById('winddow1td5').value = data.type;
+                            document.getElementById('winddow1td12').value = data.work_unit;
+                            document.getElementById('winddow1td6').value = data.title;
+                            $("#winddow1td7").combobox('setValue', data.education_background);
+                            $("#winddow1td8").combobox('setValue', data.degree);
+                            document.getElementById('winddow1td9').value = data.graducated_university;
+                            document.getElementById('winddow1td10').value = data.e_mail;
+                            document.getElementById('winddow1td11').value = data.phone;
+                            $('#window1').window('open');
+                        }
+                    })
+                }//if
+            }
+
+        })
+    })
+
+    //用户数据信息分页
+    $(function(){
+        var pager = $('#ttd1' +
+            '').datagrid().datagrid('getPager');	// get the pager of datagrid
+        pager.pagination({
+            beforePageText:'第',
+            afterPageText: ' 页  共 {pages} 页',
+            displayMsg: '当前显示 {from} - {to} 条记录   共 {total} 条记录',
+        });
+    })
+
+    //用户信息实时删除   ajax
+    function confirm1(){
+        var row = $('#ttd1').datagrid('getSelected');
+        if (row) {
+            tno=row.tno;
+            $.messager.confirm('用户信息删除', '是否要删除用户信息?', function (r) {
+                if (r) {
+                    $.ajax({
+                        url: "/deleteteacherinfo",
+                        type: "post",
+                        data: {"tno":tno},
+                        datatype: "json",
+                        success: function (data) {
+                            $('#ttd1').datagrid('reload');
+                        }
+                    })
+                }
+            });
+        }
+    }
+
+//用户信息修改弹出框  弹出时显示用户的原先信息
+    function edituser(){
+        var row = $('#ttd1').datagrid('getSelected');
+        if (row){
+            tno=row.tno;
+            $('#window1').window('open');
+            $.ajax({
+                url: "/getteacherinfo2",
+                type: "post",
+                data: {"tno":tno},
+                datatype: "json",
+                success: function (data) {
+                    document.getElementById('winddow1td1').value = data.tno;
+                    document.getElementById('winddow1td2').value = data.tname;
+                    document.getElementById('winddow1td3').value = data.gender;
+                    alert(data.gender);
+                    document.getElementById('winddow1td4').value = data.birthday_time;
+                    document.getElementById('winddow1td5').value = data.type;
+                    document.getElementById('winddow1td12').value = data.work_unit;
+                    document.getElementById('winddow1td6').value = data.title;
+                    $("#winddow1td7").combobox('setValue', data.education_background);
+                    $("#winddow1td8").combobox('setValue', data.degree);
+                    document.getElementById('winddow1td9').value = data.graducated_university;
+                    document.getElementById('winddow1td10').value = data.e_mail;
+                    document.getElementById('winddow1td11').value = data.phone;
+                    $('#window1').window('open');
+                }
+            })
+        }
+    }
+
+    //用户信息修改保存
+    function saveuser(){
+        var row = $('#ttd1').datagrid('getSelected');
+         $('#fim').form('submit',{
+            url: "/saveueserinfo",
+            onSubmit: function(){
+                location.reload();  //实行页面刷新功能  能够实时的显示更新的数据
+            },
+
+        });
+    }
+    //导出用户信息
+    function downloadfile(){
+        window.location.href="/UserExcelDownloads";
+    }
+
+</script>
+<body>
+<div class="easyui-layout" data-options="fit:true">
+    <div data-options="region:'north'" style="width: 100%;height: 9%">
+        <table border="0" style="margin-top:4px; margin-left: 18px">
+            <tr>
+                <td>
+                    <a class="easyui-linkbutton"  href="#" onclick="$('#window2').window('open')" >添加</a>
+
+                </td>
+                <td><a href="#" class="easyui-linkbutton" onclick="confirm1();">删除</a></td>
+
+                <td><a href="#" class="easyui-linkbutton" onclick="edituser()">修改</a></td>
+
+                <td><a href="#" class="easyui-linkbutton" onclick="downloadfile();">数据导出</a></td>
+
+            </tr>
+
+        </table>
+    </div>
+    <div data-options="region:'center',title:'用户信息',">
+        <table id="ttd1" class="easyui-datagrid"
+               data-options="url:'/getteacherinfomationbytno',
+               method:'get',
+               border:false,
+               singleSelect:true,
+               pagination:true,
+               fit:true,
+               pageSize:25,
+               pageList:[25,15,10],
+               fitColumns:true">
+            <thead>
+            <tr>
+                <th data-options="field:'tno',align:'center',width:'9%'">工号</th>
+                <th data-options="field:'tname',align:'center',width:'9%'">姓名</th>
+                <th data-options="field:'gender',align:'center',width:'9%'">性别</th>
+                <th data-options="field:'work_unit',align:'center',width:'11%'">单位</th>
+                <th data-options="field:'type',align:'center',width:'9%'">身份</th>
+                <th data-options="field:'title',align:'center',width:'9%'">职称</th>
+                <th data-options="field:'education_background',align:'center',width:'10%'">学历</th>
+                <th data-options="field:'degree',align:'center',width:'16%'">学位</th>
+                <th data-options="field:'graducated_university',align:'center',width:'18%'">毕业院校</th>
+            </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+<div id="window1" class="easyui-window" title="用户信息详情"  data-options="iconCls:'icon-save',closed:true,
+            minimizable:false,
+            collapsible:false" style="width:600px;
+                height:550px;
+                padding:5px;">
+    <div class="easyui-layout" data-options="fit:true" >
+        <form id="fim" method="post" >
+        <table border="0" style="margin-top:4px; margin-left: 18px">
+            <tr>
+                <td width="90">
+                    <label>工号：</label>
+                </td>
+                <td>
+                    <input type="text" name="tno" readOnly="true" style="width:255px; height: 25px;" id="winddow1td1" />
+                </td>
+                <!--th:field="*{tno}"-->
+                <td></td>
+            </tr>
+            <tr>
+                <td width="90">
+                    <label>姓名：</label>
+                </td>
+                <td>
+                    <input type="text" name="tname" id="winddow1td2"  style="width:255px; height: 25px;"/>
+                </td>
+                <td></td>
+                <!--th:field="*{tname}"-->
+            </tr>
+            <tr>
+                <td width="90">
+                    <label>性别：</label>
+                </td>
+                <td>
+                    <select class="easyui-combobox" name="gender" id="winddow1td3" style="width:260px; height: 34px;" >
+                        <option value="男性">男性</option>
+                        <option value="女性">女性</option>
+                    </select>
+                </td>
+                <td></td>
+            </tr>
+
+            <tr>
+                <td width="90">
+                    <label>出生日期：</label>
+                </td>
+                <td>
+                    <input name="birthday_time" type="text" placeholder="出生日期" onfocus="WdatePicker({dateFmt:'yyyy-MM-dd'})"
+                           id="winddow1td4" style="width:255px; height: 25px;"/>
+                    <!--th:field="*{birthday_time}"-->
+                </td>
+                <td><span><font color="#FF0000"> <em>*</em>请输入正确的时间格式</font> </span></td>
+            </tr>
+
+
+            <tr>
+                <td width="90">
+                    <label>类型：</label>
+                </td>
+                <td>
+                    <input name="type" type="text"  style="width:255px; height: 25px;" id="winddow1td5"/>
+                </td>
+                <!--th:field="*{type}"-->
+                <td></td>
+            </tr>
+
+
+            <tr>
+                <td width="90">
+                    <label>工作单位：</label>
+                </td>
+                <td>
+                    <input type="text" name="work_unit" style="width:255px; height: 25px;" id="winddow1td12"/>
+                </td>
+                <!--th:field="*{work_unit}"-->
+                <td></td>
+            </tr>
+
+
+            <tr>
+                <td width="90">
+                    <label>职称：</label>
+                </td>
+                <td>
+                    <input type="text" name="title" style="width:255px; height: 25px;" id="winddow1td6"/>
+                </td>
+                <!--th:field="*{title}"-->
+            </tr>
+
+            <tr>
+                <td>
+                    <label width="90">学历：</label>
+                </td>
+                <td>
+                    <select class="easyui-combobox" name="education_background" style="width:260px; height: 34px;" id="winddow1td7" >
+                        <!--<option value ="null" >&nbsp;</option>-->
+                        <option value ="博士研究生" >博士研究生</option>
+                        <option value ="硕士研究生">硕士研究生</option>
+                        <option value ="本科生">本科生</option>
+                        <option value ="本科生以下">本科生以下</option>
+                        <!--<option value ="null" ></option>-->
+                        <!--th:field="*{education_background}"-->
+                    </select>
+                </td>
+                <td></td>
+            </tr>
+
+            <tr>
+                <td width="90">
+                    <label>学位：</label>
+                </td>
+                <td>
+                    <select  class="easyui-combobox" name="degree"  style="width:260px; height: 34px;" id="winddow1td8" >
+
+                        <option value ="博士学位" >博士学位</option>
+                        <option value ="硕士学位">硕士学位</option>
+                        <option value ="学士学位">学士学位</option>
+                        <!--<option value ="null" ></option>-->
+                    </select>
+                    <!--th:field="*{degree}"-->
+                </td>
+                <td></td>
+            </tr>
+
+            <tr>
+                <td width="90">
+                    <label>毕业院校：</label>
+                </td>
+                <td>
+                    <input type="text"  style="width:255px; height: 25px;" name="graducated_university" id="winddow1td9"/>
+                </td>
+                <!--th:field="*{graducated_university}"-->
+                <td></td>
+            </tr>
+
+            <tr>
+                <td width="90">
+                    <label>电子邮箱：</label>
+                </td>
+                <td>
+                    <input type="text"  style="width:255px; height: 25px;" name="e_mail" id="winddow1td10"/>
+                </td>
+                <!--th:field="*{e_mail}"-->
+                <td></td>
+            </tr>
+
+            <tr>
+                <td width="90">
+                    <label>移动电话：</label>
+                </td>
+                <td>
+                    <input type="text" name="phone" style="width:255px; height: 25px;" id="winddow1td11"/>
+                </td>
+                <!--th:field="*{phone}"-->
+                <td></td>
+            </tr>
+            <!--<tr><td colspan="2" align="center"><input type="submit" value="确定" style="width:70px; height: 25px;" /></td><td></td></tr>-->
+            <tr><td colspan="2" align="center"><a href="#" class="easyui-linkbutton" onclick="saveuser()" >保存</a></td><td></td></tr>
+
+        </table>
+        </form>
+    </div>
+</div>
+
+
+<div id="window2" class="easyui-window" title="用户信息添加"  data-options="closed:true,
+            minimizable:false,
+            collapsible:false" style="width:480px;
+                height:480px;
+                padding:5px;">
+    <div class="easyui-panel" data-options="fit:true">
+        <form th:action="@{/insertteacherinfo}" th:object="${teacher}" th:method="post" id="ff" >
+            <table border="0" style="margin-top:4px; margin-left: 18px">
+                <tr>
+                    <td>工号:</td>
+                    <td><input class="easyui-textbox" type="text" name="tno" data-options="required:true"></input></td>
+                    <td></td>
+                </tr>
+
+
+                <tr>
+
+                    <td>姓名:</td>
+                    <td><input class="easyui-textbox" type="text" name="tname" data-options="required:true"></input></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>性别:</td>
+                    <td>
+                    <select class="easyui-combobox" name="gender" data-options="required:true" style="width:174px; height: 26px;">
+                        <option value="男性">男性</option>
+                        <option value="女性">女性</option>
+                    </select>
+                    </td>
+                    <td></td>
+                </tr>
+
+                <tr>
+                <!--<td><span><font color="#FF0000"> <em>*</em>请输入正确的时间格式</font> </span></td>-->
+                <td>出生日期:</td>
+                <td><input type="datetime" name="birthday_time" onfocus="WdatePicker({dateFmt:'yyyy-MM-dd'})"></input></td>
+                <td></td>
+            </tr>
+
+
+                <tr>
+                    <td>类型:</td>
+                    <td><input class="easyui-textbox" type="text" name="type" data-options="required:true"></input></td>
+                    <td></td>
+                </tr>
+
+
+                <tr>
+                    <td>工作单位:</td>
+                    <td><input class="easyui-textbox" type="text" name="work_unit" data-options="required:true"></input></td>
+                    <td></td>
+                </tr>
+
+
+                <tr>
+                    <td>职称:</td>
+                    <td><input class="easyui-textbox" type="text" name="title" data-options="required:true"></input></td>
+                    <td></td>
+                </tr>
+
+                <tr>
+                    <td>学历:</td>
+                    <td>
+                            <select id="cc2" class="easyui-combobox" name="education_background" style="width:174px; height: 26px;" >
+                            <option value ="博士研究生" >博士研究生</option>
+                            <option value ="硕士研究生">硕士研究生</option>
+                            <option value ="本科生">本科生</option>
+                            <option value ="本科生以下">本科生以下</option>
+                            </select>
+                    </td>
+                    <td></td>
+                </tr>
+
+                <tr>
+
+                    <td>学历:</td>
+                    <td>
+                        <select class="easyui-combobox" name="degree"  style="width:174px; height: 26px;">
+                            <option value ="博士学位" >博士学位</option>
+                            <option value ="硕士学位">硕士学位</option>
+                            <option value ="学士学位">学士学位</option>
+                        </select>
+                    </td>
+                    <td></td>
+                </tr>
+
+                <tr>
+                    <td>毕业院校:</td>
+                    <td><input class="easyui-textbox" type="text" name="graducated_university" data-options="required:true"></input></td>
+                    <td></td>
+                </tr>
+
+                <tr>
+                    <td>电子邮箱:</td>
+                    <td><input class="easyui-textbox" type="text" name="e_mail" data-options="required:true"></input></td>
+                    <td></td>
+                </tr>
+
+                <tr>
+                    <td>移动电话:</td>
+                    <td><input class="easyui-textbox" type="text" name="phone" data-options="required:true"></input></td>
+                    <td></td>
+                </tr>
+                <tr><td colspan="2" align="center"><input type="submit" value="确定" style="width:70px; height: 25px;" /></td><td></td></tr>
+            </table>
+        </form>
+    </div>
+</div>
+
+<div id="win" class="easyui-window" title="用户信息下载"  data-options="closed:true,
+            minimizable:false,
+            collapsible:false" style="width:40px;
+                height:40px;
+                padding:5px;">
+    <div>文件下载成功，路径为：</div>
+</div>
+</body>
+</html>
